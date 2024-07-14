@@ -1,0 +1,65 @@
+Link to pcap and har files
+https://drive.google.com/drive/folders/1-9d467IJK2piMo1QsIljsJHd1pKrEmLJ?usp=sharing
+
+Activity 1 - Preliminary analysis of packet capture data
+
+PART A
+
+After capturing the packets throughout the video, We first extracted the source_ip from the first DNS query packet and used it to get a list of uplink and downlink packets. 
+
+Iterating through the packets, we extracted the size of the packets and no. of packets for every 0.1 seconds and multiplied it with 10 to make the metric KB/sec and packets/sec which are stored in the appropriate dicts.
+
+Then with the dicts(a total of 20), We plotted 5 subgraphs (1 per resolution) in each graph, in the following order:
+*  uplink-packets/sec
+*  uplink-KB/sec
+*  downlink-packets/sec
+*  downlink-KB/sec
+
+We have set the threshold value to 100 packets (can be edited in the code) to find the fraction of the burst slots.
+We parsed through the Downlink dicts to find out the slots of 100ms which exceeded 100 Packets in the slot (i.e. more than 1000 PacketsperSecond) and divided it by the total number of observed slots(length of the dictionary itself) to get the fraction.
+
+Activity 1
+PART B
+
+After extracting the pcap files for 10 seconds:
+
+-> For DNS Query Time : 
+    We extracted the DNS ID from the first DNS Query and searched for the first DNS Query Response with the same id; Difference between their timestamps is the DNS Query Time.
+    Insights were written along with the code output.
+
+-> For TTFB :
+    We found the time elapsed from the first DNS Query to the first packet with <packet>.tls.app_data after 'Server hello'.
+
+-> Cumulative Frequency :
+
+    Calculated the total size of packets captured in each 100ms time slot (in units of kilobytes); packets which have dest. ip = our laptop (downlink specifically).
+    Mapped each 100ms timeslot to the total size of packets captured within that interval.
+    From this the cumulative percentage of data downloaded until a certain time was calculated, which is then plotted to get a Cumulative Percentage graph.
+
+
+KEY POSITIVES : 
+
+* Our code handles both ipv4 and ipv6 packet captures.
+
+
+Activity 2 - Preliminary analysis of HTTP archive data (HAR) 
+
+1. Used "Google Admin Toolbox - HAR Analyzer" to understand the structure of the JSON Object that the HAR file returns.
+2. TTFB = 'wait time' in 'timings'
+3. No. of GET requests - accessed the 'method field' of each request, incremented for each "GET" type.
+4. MIME type - accessed the respective key-value pair in the JSON object for every entry. Stored the unique types in a set data structure.
+5. To find the type of resource downloaded - image or HTML or CSS or JS, filtered using the MIME type field in each request-response pair.
+
+
+
+Activity 3 – DNS packet parser
+
+1. Read RFC 1035, and segmented the received packet (in hexadecimal byte stream format) according to the convention.
+2. First checked if the packet is a query or response based on 'QR' bit of the header section.
+3. For a query packet, found the domain name by moving to the appropriate offset in the Question section.
+4. For a response packet, handled two cases
+    a) With Message compression - (1st 2 bits of NAME is 11) - Domain name in resource record section is a pointer 
+    b) Without Message compression - (1st 2 bits of NAME is 00) - Domain name is present in same format as Question section
+5. Handled 'invalid packet' cases:
+    a) checked the RCODE of header section and threw appropriate Exceptions.
+    b) checked if the domain name follows the RFC 1035 standards.

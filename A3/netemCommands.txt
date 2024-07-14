@@ -1,0 +1,4 @@
+sudo tc qdisc replace dev wlo1 root netem delay 500ms 10ms 
+
+sudo tc qdisc delete dev wlo1 root - delete qdisc
+
